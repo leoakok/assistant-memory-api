@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: assistant-memory-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/assistant-memory
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-key}
+      - STORAGE_MODE=auto
+    volumes:
+      - ./data:/usr/src/app/data
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks:
+      - assistant-network
+
+  mongo:
+    image: mongo:7-jammy
+    container_name: assistant-memory-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=assistant-memory
+    restart: unless-stopped
+    networks:
+      - assistant-network
+
+volumes:
+  mongo-data:
+    driver: local
+
+networks:
+  assistant-network:
+    driver: bridge
